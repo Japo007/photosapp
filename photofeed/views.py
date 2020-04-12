@@ -15,10 +15,14 @@ def profile(request):
     if request.method == "POST":
         print("POST IMAGE")
         form = ImageForm(request.POST, request.FILES)
+        print(form.errors)        
         if form.is_valid():
             print("form is valid and saving")
+            print(form)
             form.save()
             return redirect('/photofeed/profile')
+        else:
+            print("form is not valid")
     else:
         form = ImageForm()
     """
