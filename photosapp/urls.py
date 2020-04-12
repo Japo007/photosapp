@@ -17,6 +17,8 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
 from photofeed import views
+from django.conf.urls.static import static
+from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -25,5 +27,9 @@ urlpatterns = [
 #Add Django site authentication urls (for login, logout, password management)
 urlpatterns += [
     path('photofeed/', include('django.contrib.auth.urls')),
-    path('photofeed/profile/', views.profile, name='profile'),
+    path('photofeed/profile/', views.profile, name='profile'),    
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

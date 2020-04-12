@@ -12,6 +12,7 @@ class Image(models.Model):
     file = models.ImageField()
     caption = models.CharField(max_length=30)
     uploaded_at = models.DateTimeField(auto_now_add=True)
+    user = models.CharField(max_length=20, default='japneet')
 
     class Meta:
         verbose_name = 'image'
