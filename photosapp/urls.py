@@ -15,7 +15,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf.urls import include
+from photofeed import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+]
+
+#Add Django site authentication urls (for login, logout, password management)
+urlpatterns += [
+    path('photofeed/', include('django.contrib.auth.urls')),
+    path('photofeed/profile/', views.profile, name='profile'),
 ]

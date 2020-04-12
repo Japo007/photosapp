@@ -1,0 +1,15 @@
+<h1 class="page-header">Album</h1>
+
+  <!-- FORM TO UPLOAD THE IMAGES -->
+  <form method="post" enctype="multipart/form-data" id="formUpload">
+    {% csrf_token %}
+    {{ form }}
+  </form>
+
+  <div class="row" style="margin-top: 20px">
+    {% for photo in photos %}
+      <div class="col-sm-4 col-md-3">
+        <img src="{{ photo.file.url }}" class="thumbnail">
+      </div>
+    {% endfor %}
+  </div>
