@@ -8,12 +8,14 @@ class Imager(models.Model):
     def __str__(self):
         return self.firstname
 
-class Image(models.Model):
+class Photo(models.Model):
     file = models.ImageField()
+    originalFile = models.ImageField(default='download.png')
     caption = models.CharField(max_length=30)
     uploaded_at = models.DateTimeField(auto_now_add=True)
     user = models.CharField(max_length=20, default='japneet')
+    draft = models.BooleanField(default=False) 
 
     class Meta:
-        verbose_name = 'image'
-        verbose_name_plural = 'images'
+        verbose_name = 'photo'
+        verbose_name_plural = 'photos'

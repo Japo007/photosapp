@@ -1,60 +1,152 @@
 {% extends 'base.html' %}
 
 {% block javascript %}
-<script>
+  <script>
     $(function () {
-        $("#id_file").change(function () {
+
+      /* SCRIPT TO OPEN THE MODAL WITH THE PREVIEW */
+      $("#id_file").change(function () {
         if (this.files && this.files[0]) {
           var reader = new FileReader();
           reader.onload = function (e) {
-            var img = new Image();
-            img.onload = function(){                
-                $('#image123').attr('src', e.target.result).css('max-width', img.width);
-            };/*.each(function(){
-                if(this.complete) {
-                $(this).trigger('load');
-                }
-            });*/
-            img.src = reader.result;         
+            $("#image").attr("src", e.target.result);
+            $("#modalCrop").modal("show");
           }
           reader.readAsDataURL(this.files[0]);
         }
       });
 
-        var $image = $('#image123');
-        var imageSrc = $image.attr('src');
-        var propSrc = $('#image123').prop('src');
-        $(".js-crop-and-upload").click(function () {            
-            var img1 = new Image();
-            var imgWidth = img1.width;
-            img1.onload = function(){
-                var currwidth = img1.width;
-            }
-            var width = $('#image123').prop('width');
-            var naturalWidth = $('#image123').prop('naturalWidth');
-            var maxwidth = $('#image123').css('max-width');
-            $("#id_height").val($image.height);
-            $("#id_width").val($image.width);            
-            $("#formUpload").submit();
+      /* SCRIPTS TO HANDLE THE CROPPER BOX */
+      var $image = $("#image");
+      var cropBoxData;      
+      var canvasData;
+      $("#modalCrop").on("shown.bs.modal", function () {
+        $image.cropper({
+          viewMode: 1,
+          autoCropArea: 1,                    
+          minCropBoxWidth: 200,
+          minCropBoxHeight: 200,          
+          ready: function () {
+            $image.cropper("setCanvasData", canvasData);
+            $image.cropper("setCropBoxData", cropBoxData);
+            $image.cropper("disable");
+          }
         });
+      }).on("hidden.bs.modal", function () {
+        cropBoxData = $image.cropper("getCropBoxData");
+        canvasData = $image.cropper("getCanvasData");
+        $image.cropper("destroy");
+      });
+
+      $(".save-draft").click(function () {
+        var cropData = $image.cropper("getData");
+        var str = $("#caption").val();
+        $("#id_caption").val(str);
+        $("#id_x").val(cropData["x"]);
+        $("#id_y").val(cropData["y"]);
+        $("#id_height").val(cropData["height"]);
+        $("#id_width").val(cropData["width"]);
+        $("#id_draft").val(true);
+        $("#formUpload").submit();
+      });
+
+      /* SCRIPT TO COLLECT THE DATA AND POST TO THE SERVER */
+      $(".js-crop-and-upload").click(function () {
+        var cropData = $image.cropper("getData");
+        var str = $("#caption").val();
+        if(str === "Caption Here" || str === ""){
+            alert("Please Input caption");
+            return;
+        }
+        $("#id_caption").val(str);
+        $("#id_x").val(cropData["x"]);
+        $("#id_y").val(cropData["y"]);
+        $("#id_height").val(cropData["height"]);
+        $("#id_width").val(cropData["width"]);
+        $("#id_draft").val(false);
+        $("#formUpload").submit();
+      });
+
     });
-</script>
+    function updateCaption(src, caption){
+        //var u = src;
+        var b = src;
+        $("#imageUpdate").attr("src", src);
+        $("#captionUpdate").attr("placeholder", caption);
+        $("#modalCaption").modal("show");
+    }
+  </script>
 {% endblock %}
+
 {% block content %}
-<h1 class="page-header">Album</h1>
+<!--<style>
+    .col-sm-4 col-md-3:hover .thumbnail {
+  opacity: 0.3;
+}
+</style>-->
+  <h1 class="page-header">Album</h1>
+
   <!-- FORM TO UPLOAD THE IMAGES -->
-  <form method="post" class="image-form" enctype="multipart/form-data" id="formUpload">
+  <form method="post" enctype="multipart/form-data" id="formUpload">
     {% csrf_token %}
     {{ form }}
   </form>
 
-  <button type="submit" class="btn btn-primary js-crop-and-upload">Upload</button>
+  <!-- MODAL TO CROP THE IMAGE -->
+  <div class="modal fade" id="modalCrop">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+          <h4 class="modal-title"><form action="">
+            <label for="caption"></label><br><br>
+            <input type="text" id="caption" name="caption" placeholder="Caption Here"><br><br></h4>
+        </div>
+        <div class="modal-body">
+          <img src="" id="image" style="max-width: 100%;">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary save-draft">Save as Draft</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Nevermind</button>
+          <button type="button" class="btn btn-primary js-crop-and-upload">Crop and upload</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
+    <!-- MODAL TO CROP THE IMAGE -->
+    <div class="modal fade" id="modalCaption">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+              <h4 class="modal-title">Edit Caption<form action="">
+                <label for="captionUpdate"></label><br><br>
+                <input type="text" id="captionUpdate" name="captionUpdate" placeholder=""><br><br></h4>
+            </div>
+            <div class="modal-body">
+              <img src="" id="imageUpdate" style="max-width: 100%;">
+            </div>
+            <div class="modal-footer">              
+              <button type="button" class="btn btn-default" data-dismiss="modal">Nevermind</button>
+              <button type="button" class="btn btn-primary caption-update">Update</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+  <!-- CONTAINER TO DISPLAY THE CROPPED IMAGES -->
   <div class="row" style="margin-top: 20px">
-    {% for image in images %}
+    {% for photo in photos %}
       <div class="col-sm-4 col-md-3">
-        <img src="{{ image.file.url }}" class="thumbnail">
+        <img src="{{ photo.file.url }}" class="thumbnail" onClick='updateCaption("{{ photo.originalFile.url }}", "{{ photo.caption }}")'>
+        <figcaption id="picCaption">"{{ photo.caption }}"</figcaption>
       </div>
     {% endfor %}
   </div>
-  {% endblock %}
+
+{% endblock %}

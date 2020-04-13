@@ -1,20 +1,22 @@
 from django.shortcuts import (HttpResponse, render, redirect,
                         get_object_or_404, reverse, get_list_or_404, Http404)
-from . models import Image
-from .forms import ImageForm
+from . models import Photo
+from .forms import PhotoForm
+from .serializers import PhotoSerializer
 import sys
 
 
 def profile(request):
     #user = get_object_or_404(User, username=username)
-    images = Image.objects.all()
-    print(sys.getsizeof(images))
+    photos = Photo.objects.all()
+    print(sys.getsizeof(photos))
     user = request.user
     print(user)
     print("HelloWorld")
     if request.method == "POST":
         print("POST IMAGE")
-        form = ImageForm(request.POST, request.FILES)
+        form = PhotoForm(request.POST, request.FILES)
+        print(form)
         print(form.errors)        
         if form.is_valid():
             print("form is valid and saving")
@@ -24,7 +26,7 @@ def profile(request):
         else:
             print("form is not valid")
     else:
-        form = ImageForm()
+        form = PhotoForm()
     """
     # if the profile is private and logged in user is not same as the user being viewed,
     # show 404 error
@@ -46,7 +48,7 @@ def profile(request):
     snippets = paginate_result(request, snippet_list, 5)
     """
     return render(request, 'userdata/profile.html',
-                  {'user' : user, 'form' : form, 'images': images} )
+                  {'user' : user, 'form' : form, 'photos': photos} )
 """
 def image_list(request):
     images = Image.objects.all()
