@@ -1,12 +1,62 @@
-from django.shortcuts import (HttpResponse, render, redirect,
-                        get_object_or_404, reverse, get_list_or_404, Http404)
+"""from django.shortcuts import (HttpResponse, render, redirect,
+                        get_object_or_404, reverse, get_list_or_404, Http404)"""
 from . models import Photo
-from .forms import PhotoForm
 from .serializers import PhotoSerializer
-import sys
+from rest_framework import viewsets, generics
+from rest_framework import status
+from rest_framework.response import Response
 
 
-def profile(request):
+
+class PhotoViewSet(viewsets.ModelViewSet):
+    queryset = Photo.objects.all()
+    serializer_class = PhotoSerializer
+
+class PhotoViewSetAsDraft(viewsets.ModelViewSet):
+    queryset = Photo.objects.all()
+    serializer_class = PhotoSerializer
+
+class PhotoViewSetAsc(viewsets.ModelViewSet):
+    queryset = Photo.objects.order_by('uploaded_at')
+    serializer_class = PhotoSerializer
+
+class PhotoViewSetDesc(viewsets.ModelViewSet):
+    queryset = Photo.objects.order_by('-uploaded_at')
+    serializer_class = PhotoSerializer
+
+class PhotoViewSetMine(viewsets.ModelViewSet):
+    
+    serializer_class = PhotoSerializer
+    def get_queryset(self):
+        photos = Photo.objects.filter(user=self.request.user)
+        return photos
+
+class PhotoViewSetMyDrafts(viewsets.ModelViewSet):
+    
+    serializer_class = PhotoSerializer
+    def get_queryset(self):        
+        photos = Photo.objects.filter(user=self.request.user, draft=True)
+        return photos
+
+class PhotoViewSetByUser(viewsets.ModelViewSet):
+    
+    serializer_class = PhotoSerializer
+    def get_queryset(self):        
+        photos = Photo.objects.filter(user=self.kwargs['user_name'])
+        return photos
+
+"""
+    def get(self, request):
+        photo1 = Photo.objects.all()
+        serializer = PhotoSerializer(photo1, many=True)
+        return Response(serializer.data)
+
+
+    def post(self, request):
+
+        pass
+"""
+"""
     #user = get_object_or_404(User, username=username)
     photos = Photo.objects.all()
     print(sys.getsizeof(photos))
@@ -27,7 +77,7 @@ def profile(request):
             print("form is not valid")
     else:
         form = PhotoForm()
-    """
+    
     # if the profile is private and logged in user is not same as the user being viewed,
     # show 404 error
     if user.profile.private and request.user.username != user.username:
@@ -46,10 +96,10 @@ def profile(request):
         snippet_list = user.snippet_set.all()
  
     snippets = paginate_result(request, snippet_list, 5)
-    """
+    
     return render(request, 'userdata/profile.html',
                   {'user' : user, 'form' : form, 'photos': photos} )
-"""
+
 def image_list(request):
     images = Image.objects.all()
     if request.method == 'POST':

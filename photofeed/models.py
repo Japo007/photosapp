@@ -1,14 +1,7 @@
 from django.db import models
 
-class Imager(models.Model):
-    firstname = models.CharField(max_length=10)
-    lastname = models.CharField(max_length=10)
-    bio = models.CharField(max_length=180, blank=True, null=True)
-
-    def __str__(self):
-        return self.firstname
-
 class Photo(models.Model):
+    photo_id = models.AutoField(primary_key=True)
     file = models.ImageField()
     originalFile = models.ImageField(default='download.png')
     caption = models.CharField(max_length=30)

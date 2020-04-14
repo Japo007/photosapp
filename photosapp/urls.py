@@ -16,19 +16,36 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
-from photofeed import views
+from django.conf.urls import url
+from photofeed.views import PhotoViewSet, PhotoViewSetAsc, PhotoViewSetDesc, PhotoViewSetMine, PhotoViewSetMyDrafts, PhotoViewSetByUser, PhotoViewSetAsDraft
+
 from django.conf.urls.static import static
 from django.conf import settings
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register('photos', PhotoViewSet, basename='photos')
+router.register('photosAsDraft', PhotoViewSetAsDraft, basename='photosAsDraft')
+router.register('photosAsc', PhotoViewSetAsc, basename='photosAsc')
+router.register('photosDesc', PhotoViewSetDesc, basename='photosDesc')
+router.register('photosMine', PhotoViewSetMine, basename='photosMine')
+router.register('photosMyDrafts', PhotoViewSetMyDrafts, basename='photosMyDrafts')
+router.register('photosByUser/(?P<user_name>.+?)', PhotoViewSetByUser, basename='photosByUser')
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    url(r'^admin/', admin.site.urls),
+    #url(r'^photos/',views.PhotoList.as_view()),
 ]
 
+urlpatterns += router.urls
+
 #Add Django site authentication urls (for login, logout, password management)
+"""
 urlpatterns += [
     path('photofeed/', include('django.contrib.auth.urls')),
     path('photofeed/profile/', views.profile, name='profile'),    
 ]
+"""
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

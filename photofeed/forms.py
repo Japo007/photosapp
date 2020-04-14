@@ -1,3 +1,4 @@
+"""
 from PIL import Image
 
 from django import forms
@@ -41,3 +42,4 @@ class PhotoForm(forms.ModelForm):
         resized_image.save(photo.file.path)
 
         return photo
+        """
