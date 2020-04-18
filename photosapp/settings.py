@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'photofeed',
     'easy_thumbnails',
+    'rest_framework_bulk',
+    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
