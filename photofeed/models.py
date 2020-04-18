@@ -2,7 +2,7 @@ from django.db import models
 
 class Photo(models.Model):
     photo_id = models.AutoField(primary_key=True)
-    presentableFile = models.ImageField(default='download.png', blank=True)
+    presentableFile = models.ImageField(blank=True, editable=False)
     originalFile = models.ImageField()
     caption = models.CharField(max_length=30)
     uploaded_at = models.DateTimeField(auto_now_add=True)
