@@ -4,7 +4,7 @@ from django.urls import reverse
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 from photofeed.models import Photo
-from photofeed.serializers import PhotoSerializer
+from photofeed.serializers import PhotoSerializer, PhotoBulkSerializer
 from PIL import Image
 import tempfile
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -46,15 +46,12 @@ def get_temporary_image_large_height_width():
 class PhotoViewSetTestCase(APITestCase):    
 
     def setUp(self):
-        #self.client.force_login(User.objects.get_or_create(username='John')[0])
         self.adminuser = User.objects.create_superuser('Daenerys', 'Daenerys@test.com', 'Daenerys')
         self.adminuser.save()
         response = self.client.post("/api/token/", {"username": "Daenerys", "password": "Daenerys"})
         self.assertEqual(response.status_code, 200, "The token should be successfully returned.")              
         token = response.data['access']        
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
-        #Photo.objects.all().delete()
-
 
     def test_post_photo(self):      
         data = {'originalFile': get_temporary_image(), 'presentableFile': get_temporary_image(), 'caption': 'Test Post', 'user': 'Test User'}       
@@ -96,7 +93,6 @@ class PhotoViewSetTestCase(APITestCase):
         response = self.client.get('/photos/')
         self.assertEqual(200, response.status_code)
         self.assertEqual(5, len(response.data))
-        #self.client.force_login(User.objects.get_or_create(username='Daenerys')[0])
         response = self.client.get('/photosMine/')        
         self.assertEqual(200, response.status_code)
         self.assertEqual(2, len(response.data))
@@ -189,3 +185,31 @@ class PhotoViewSetTestCase(APITestCase):
         w, h = get_image_dimensions(currPhoto.presentableFile)        
         self.assertTrue(w == 1000)
         self.assertTrue(h == 1000)
+
+    def test_bulk_post(self):        
+        data = {'originalFile': get_temporary_image(), 'presentableFile': get_temporary_image(), 'caption': 'Bulk Image 1', 'user': 'Test User', 'draft': 'true'}        
+        response = self.client.post('/photosBulk/', data, follow=True)
+        self.assertEqual(201, response.status_code)
+        self.assertEqual('Bulk Image 1', response.data['caption'])
+
+    def test_bulk_get(self):
+        Photo.objects.create(presentableFile=get_temporary_image().name, originalFile=get_temporary_image().name, caption='Caption 1', user="John", draft=True)
+        Photo.objects.create(presentableFile=get_temporary_image().name, originalFile=get_temporary_image().name, caption='Caption 2', user="John", draft=False)
+        Photo.objects.create(presentableFile=get_temporary_image().name, originalFile=get_temporary_image().name, caption='Caption 3', user="Daenerys", draft=False)
+        Photo.objects.create(presentableFile=get_temporary_image().name, originalFile=get_temporary_image().name, caption='Caption 4', user="Daenerys", draft=True)
+        Photo.objects.create(presentableFile=get_temporary_image().name, originalFile=get_temporary_image().name, caption='Caption 5', user="Tyrion", draft=False)                      
+        response = self.client.get('/photosBulk/')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(5, len(response.data))
+
+    def test_bulk_update_photo_caption(self):
+        Photo.objects.create(presentableFile=get_temporary_image().name, originalFile=get_temporary_image().name, caption='Test Update')        
+        response  = self.client.patch('/photosBulk/1/', {'caption': 'Updated_caption'})        
+        self.assertEqual(200, response.status_code)        
+        self.assertEqual('Updated_caption', response.data['caption'])
+
+    def test_bulk_delete_photo(self):
+        Photo.objects.create(presentableFile=get_temporary_image().name, originalFile=get_temporary_image().name, caption='Test Bulk Delete')        
+        response  = self.client.delete('/photosBulk/1/')        
+        self.assertEqual(204, response.status_code)
+        self.assertEqual(0, len(Photo.objects.all()))

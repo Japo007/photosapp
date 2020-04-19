@@ -10,17 +10,9 @@ from rest_framework_bulk import BulkModelViewSet
 class PhotoBulkViewSet(BulkModelViewSet):
     queryset = Photo.objects.all()
     serializer_class = PhotoBulkSerializer
-
-#    def allow_bulk_destroy(self, qs, filtered):
-#        """Don't forget to fine-grain this method"""
-
+    authentication_classes = (authentication.JWTAuthentication,)
 
 class PhotoViewSet(viewsets.ModelViewSet):    
-    queryset = Photo.objects.all()
-    serializer_class = PhotoSerializer
-    #authentication_classes = (authentication.JWTAuthentication,)
-
-class PhotoViewSetAsDraft(viewsets.ModelViewSet):
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
     authentication_classes = (authentication.JWTAuthentication,)

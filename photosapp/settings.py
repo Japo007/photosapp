@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'photofeed',
     'easy_thumbnails',
     'rest_framework_bulk',
-    'rest_framework.authtoken',
 ]
 
 MIDDLEWARE = [
@@ -132,21 +131,3 @@ STATICFILES_DIRS = (
 )
 
 LOGIN_REDIRECT_URL = '/photofeed/profile'
-
-THUMBNAIL_ALIASES = {
-    '': {
-        'avatar': {'size': (50, 50), 'crop': True},
-    },
-}
-
-"""
-REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': ( 
-        'rest_framework.permissions.IsAuthenticated',
-    ),
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    )
-}
-"""

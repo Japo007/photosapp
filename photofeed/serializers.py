@@ -17,9 +17,9 @@ class PhotoBulkSerializer(BulkSerializerMixin, serializers.ModelSerializer):
         fields = '__all__'
 
     def validate(self, data):
-        print("In Bulk validate")
-        print("Self is ", self)
-        print("Data is ", data)
+
+        if(self.partial):
+            return data
         file = data['originalFile']
         w, h = get_image_dimensions(file)
         resized_image = None        
@@ -53,9 +53,7 @@ class PhotoBulkSerializer(BulkSerializerMixin, serializers.ModelSerializer):
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             currUser = request.user
-        data['user'] = currUser 
-        w, h = get_image_dimensions(data['presentableFile'])
-        print("After Update dimensions are ", w, h)
+        data['user'] = currUser
         return data
 
 
@@ -66,17 +64,11 @@ class PhotoSerializer(serializers.ModelSerializer):
     user = serializers.CharField()
     
     def validate(self, data):
-        """
-        print("In validate")
-        print("Self is ", self)
-        print("Data is", data)
-        print(self.context.get("request"))
-        """
+
         if(self.partial):
             return data
         file = data['originalFile']
         w, h = get_image_dimensions(file)
-        #print("In serializer dimensions are ", w, h)
         resized_image = None        
         if (w > 1000) and (h > 1000):
             thumbnail_options = {
@@ -108,11 +100,7 @@ class PhotoSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if request and hasattr(request, "user"):
             currUser = request.user
-        data['user'] = currUser
-        #file = data['presentableFile']
-        #print("Presentable File is ", file)
-        #w, h = get_image_dimensions('/Users/vesper/code/matrix/photosapp/media/presentableFile.1000x1000_q85_crop-smart_upscale.jpg')
-        #print("After update dimensions are ", w, h)           
+        data['user'] = currUser        
         return data
 
 

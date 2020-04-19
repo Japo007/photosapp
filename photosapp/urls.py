@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import include
 from django.conf.urls import url
-from photofeed.views import PhotoViewSet, PhotoViewSetAsc, PhotoViewSetDesc, PhotoViewSetMine, PhotoViewSetMyDrafts, PhotoViewSetByUser, PhotoViewSetAsDraft, PhotoBulkViewSet
+from photofeed.views import PhotoViewSet, PhotoViewSetAsc, PhotoViewSetDesc, PhotoViewSetMine, PhotoViewSetMyDrafts, PhotoViewSetByUser, PhotoBulkViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.conf.urls.static import static
 from django.conf import settings
@@ -11,7 +11,6 @@ from rest_framework_bulk.routes import BulkRouter
 
 router = DefaultRouter()
 router.register('photos', PhotoViewSet, basename='photos')
-router.register('photosAsDraft', PhotoViewSetAsDraft, basename='photosAsDraft')
 router.register('photosAsc', PhotoViewSetAsc, basename='photosAsc')
 router.register('photosDesc', PhotoViewSetDesc, basename='photosDesc')
 router.register('photosMine', PhotoViewSetMine, basename='photosMine')
