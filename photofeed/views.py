@@ -18,7 +18,7 @@ class PhotoBulkViewSet(BulkModelViewSet):
 class PhotoViewSet(viewsets.ModelViewSet):    
     queryset = Photo.objects.all()
     serializer_class = PhotoSerializer
-    authentication_classes = (authentication.JWTAuthentication,)
+    #authentication_classes = (authentication.JWTAuthentication,)
 
 class PhotoViewSetAsDraft(viewsets.ModelViewSet):
     queryset = Photo.objects.all()

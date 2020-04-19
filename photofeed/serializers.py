@@ -76,6 +76,7 @@ class PhotoSerializer(serializers.ModelSerializer):
             return data
         file = data['originalFile']
         w, h = get_image_dimensions(file)
+        #print("In serializer dimensions are ", w, h)
         resized_image = None        
         if (w > 1000) and (h > 1000):
             thumbnail_options = {
@@ -89,7 +90,7 @@ class PhotoSerializer(serializers.ModelSerializer):
             thumbnail_options = {
                 'crop': 'smart',
                 'upscale': True,
-                'size': (1000, 0)
+                'size': (w, 1000)
             }
             resized_image = get_thumbnailer(data['originalFile'],'presentableFile').get_thumbnail(thumbnail_options)
             data['presentableFile'] = resized_image.url.split("/")[2]
@@ -97,7 +98,7 @@ class PhotoSerializer(serializers.ModelSerializer):
             thumbnail_options = {
                 'crop': 'smart',
                 'upscale': True,
-                'size': (0, 1000)
+                'size': (1000, h)
             }
             resized_image = get_thumbnailer(data['originalFile'],'presentableFile').get_thumbnail(thumbnail_options)
             data['presentableFile'] = resized_image.url.split("/")[2]                
@@ -108,9 +109,10 @@ class PhotoSerializer(serializers.ModelSerializer):
         if request and hasattr(request, "user"):
             currUser = request.user
         data['user'] = currUser
-        print("Presentable File is ", data['presentableFile'])
-        w, h = get_image_dimensions(data['presentableFile'])
-        print("After Update dimensions are ", w, h)       
+        #file = data['presentableFile']
+        #print("Presentable File is ", file)
+        #w, h = get_image_dimensions('/Users/vesper/code/matrix/photosapp/media/presentableFile.1000x1000_q85_crop-smart_upscale.jpg')
+        #print("After update dimensions are ", w, h)           
         return data
 
 

@@ -46,17 +46,27 @@ def get_temporary_image_large_height_width():
 class PhotoViewSetTestCase(APITestCase):    
 
     def setUp(self):
-        self.client.force_login(User.objects.get_or_create(username='John')[0])       
+        #self.client.force_login(User.objects.get_or_create(username='John')[0])
+        self.adminuser = User.objects.create_superuser('Daenerys', 'Daenerys@test.com', 'Daenerys')
+        self.adminuser.save()
+        response = self.client.post("/api/token/", {"username": "Daenerys", "password": "Daenerys"})
+        self.assertEqual(response.status_code, 200, "The token should be successfully returned.")              
+        token = response.data['access']        
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + token)
+        #Photo.objects.all().delete()
+
 
     def test_post_photo(self):      
         data = {'originalFile': get_temporary_image(), 'presentableFile': get_temporary_image(), 'caption': 'Test Post', 'user': 'Test User'}       
-        response = self.client.post('/photos/', data, follow=True)
+        response = self.client.post('/photos/', data, follow=True)       
         self.assertEqual(201, response.status_code)
+        self.assertEqual(1, response.data['photo_id'])
 
     def test_get_photo(self):
         Photo.objects.create(presentableFile=get_temporary_image().name, originalFile=get_temporary_image().name, caption='Test Create')
         response = self.client.get('/photos/')                
         self.assertEqual(200, response.status_code)
+        self.assertEqual(1, len(response.data))
 
     def test_update_photo_caption(self):
         Photo.objects.create(presentableFile=get_temporary_image().name, originalFile=get_temporary_image().name, caption='Test Update')        
@@ -68,7 +78,8 @@ class PhotoViewSetTestCase(APITestCase):
         data = {'originalFile': get_temporary_image(), 'presentableFile': get_temporary_image(), 'caption': 'Test Post', 'user': 'hello', 'draft': 'true'}       
         response = self.client.post('/photos/', data)
         self.assertEqual(201, response.status_code)        
-        self.assertEqual(True, response.data['draft'])
+        self.assertEqual(1, response.data['photo_id'])
+        self.assertEqual(True, response.data['draft'])                
 
     def test_delete_photo(self):
         Photo.objects.create(presentableFile=get_temporary_image().name, originalFile=get_temporary_image().name, caption='Test Delete')        
@@ -85,13 +96,13 @@ class PhotoViewSetTestCase(APITestCase):
         response = self.client.get('/photos/')
         self.assertEqual(200, response.status_code)
         self.assertEqual(5, len(response.data))
-        self.client.force_login(User.objects.get_or_create(username='Daenerys')[0])
-        response = self.client.get('/photosMine/')
+        #self.client.force_login(User.objects.get_or_create(username='Daenerys')[0])
+        response = self.client.get('/photosMine/')        
         self.assertEqual(200, response.status_code)
         self.assertEqual(2, len(response.data))
         self.assertEqual("Daenerys", response.data[0]['user'])
         self.assertEqual("Daenerys", response.data[1]['user'])        
-        response = self.client.get('/photosMyDrafts/')        
+        response = self.client.get("/photosMyDrafts/")
         self.assertEqual(200, response.status_code)
         self.assertEqual(1, len(response.data))
         self.assertEqual(True, response.data[0]['draft'])        
@@ -145,43 +156,36 @@ class PhotoViewSetTestCase(APITestCase):
         self.assertEqual(1, len(response.data))
         self.assertEqual("Tyrion", response.data[0]['user'])
 
-    def test_photo_present_dimensions(self):
-        print("Running dimenions ------------------------------------------------------------")
+    
+    def test_photo_present_dimensions(self):        
         data = {'originalFile': get_temporary_image(), 'presentableFile': get_temporary_image(), 'caption': 'Test Post', 'user': 'Test User'}       
         response = self.client.post('/photos/', data, follow=True)
         self.assertEqual(201, response.status_code)
         currPhoto = Photo.objects.all()[0]
         w, h = get_image_dimensions(currPhoto.presentableFile)
-        print("Width and height are ",w, h)
         self.assertTrue(w < 1000)
         self.assertTrue(h < 1000)
         Photo.objects.get(pk=1).delete()
         data = {'originalFile': get_temporary_image_large_width(), 'presentableFile': get_temporary_image_large_width(), 'caption': 'Test Post', 'user': 'Test User'}       
         response = self.client.post('/photos/', data, follow=True)
         self.assertEqual(201, response.status_code)
-        print("Size is ", len(Photo.objects.all()))
         currPhoto = Photo.objects.all()[0]
         w, h = get_image_dimensions(currPhoto.presentableFile)
-        print("Large Width and height are ",w, h)
         self.assertTrue(w == 1000)
         self.assertTrue(h < 1000)
-        Photo.objects.get(pk=1).delete()
+        Photo.objects.all().delete()
         data = {'originalFile': get_temporary_image_large_height(), 'presentableFile': get_temporary_image_large_height(), 'caption': 'Test Post', 'user': 'Test User'}       
         response = self.client.post('/photos/', data, follow=True)
         self.assertEqual(201, response.status_code)
-        #Photo.objects.create(presentableFile=get_temporary_image_large_height().name, originalFile=get_temporary_image_large_height().name, caption='Caption 1', user="John", draft=True)
         currPhoto = Photo.objects.all()[0]
         w, h = get_image_dimensions(currPhoto.presentableFile)
-        print("Width and Large height are ",w, h)
         self.assertTrue(w < 1000)
         self.assertTrue(h == 1000)
-        Photo.objects.get(pk=1).delete()
+        Photo.objects.all().delete()
         data = {'originalFile': get_temporary_image_large_height_width(), 'presentableFile': get_temporary_image_large_height_width(), 'caption': 'Test Post', 'user': 'Test User'}       
         response = self.client.post('/photos/', data, follow=True)
         self.assertEqual(201, response.status_code)
-        #Photo.objects.create(presentableFile=get_temporary_image_large_height_width().name, originalFile=get_temporary_image_large_height_width().name, caption='Caption 1', user="John", draft=True)
         currPhoto = Photo.objects.all()[0]
-        w, h = get_image_dimensions(currPhoto.presentableFile)
-        print("Width and height are Large  ",w, h)
+        w, h = get_image_dimensions(currPhoto.presentableFile)        
         self.assertTrue(w == 1000)
         self.assertTrue(h == 1000)
